@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+
+  <title>Vocabulary 1º ESO</title>
+
+  <!-- Manifest / PWA -->
+  <link rel="manifest" href="manifest.webmanifest?v=1">
+  <link rel="icon" href="icon-192.png?v=1" sizes="192x192">
+  <link rel="icon" href="icon-512.png?v=1" sizes="512x512">
+  <link rel="apple-touch-icon" href="icon-192.png?v=1">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Vocabulary 1º ESO">
+
+  <!-- Librería para leer Excel en el navegador (SheetJS).
+       Si algún día esta URL deja de funcionar, busca "xlsx.full.min.js cdn"
+       y usa una equivalente. -->
+  <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #111111;
+      --fg-dim: #555555;
+      --accent-ok-bg: #d1fae5;
+      --accent-ok-fg: #065f46;
+      --accent-bad-bg: #fee2e2;
+      --accent-bad-fg: #7f1d1d;
+      --border: #dddddd;
+      --accent-chip-bg: #f3f4f6;
+      --accent-chip-fg: #111111;
+      --btn-bg: #111111;
+      --btn-fg: #ffffff;
+      --btn-bg-disabled: #999999;
+      --card-bg: #f9fafb;
+    }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 4rem;
+    }
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+      text-align: center;
+    }
+    h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      color: var(--fg-dim);
+    }
+    select, input[type="text"], input[type="checkbox"] {
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 1rem;
+      padding: 0.6rem 0.7rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--fg);
+    }
+    .row-inline {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .row-inline > label {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    .row-inline > input[type="checkbox"] {
+      flex: 0 0 auto;
+      width: auto;
+    }
+    .btn {
+      background: var(--btn-bg);
+      color: var(--btn-fg);
+      border: none;
+      border-radius: 0.75rem;
+      padding: 0.8rem 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 0.75rem;
+    }
+    .btn[disabled] {
+      background: var(--btn-bg-disabled);
+      cursor: not-allowed;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+    }
+    .chip {
+      background: var(--accent-chip-bg);
+      color: var(--accent-chip-fg);
+      padding: 0.3rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      line-height: 1.2;
+      font-weight: 500;
+    }
+    .question-block {
+      font-size: 0.9rem;
+      color: var(--fg-dim);
+      margin-bottom: 0.25rem;
+    }
+    .question-word {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--fg);
+      word-wrap: break-word;
+    }
+    .stats {
+      font-size: 0.8rem;
+      color: var(--fg-dim);
+      margin-top: 0.75rem;
+      line-height: 1.4;
+    }
+    .progress-bar-outer {
+      width: 100%;
+      height: 0.5rem;
+      background: #e5e7eb;
+      border-radius: 0.5rem;
+      margin-top: 1rem;
+      overflow: hidden;
+    }
+    .progress-bar-inner {
+      height: 100%;
+      background: var(--fg);
+      width: 0%;
+      transition: width 0.2s;
+    }
+    .feedback-card {
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      line-height: 1.4;
+      display: none;
+    }
+    .feedback-ok {
+      background: var(--accent-ok-bg);
+      color: var(--accent-ok-fg);
+    }
+    .feedback-bad {
+      background: var(--accent-bad-bg);
+      color: var(--accent-bad-fg);
+    }
+    .extra-info-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      display: none;
+    }
+    .extra-info-card h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .summary-list {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .summary-list h4 {
+      margin: 0 0 0.5rem;
+      font-size: 0.8rem;
+    }
+    .summary-item {
+      margin-bottom: 0.5rem;
+    }
+    .danger-text {
+      color: var(--accent-bad-fg);
+      font-size: 0.8rem;
+    }
+    .muted {
+      color: var(--fg-dim);
+      font-size: 0.8rem;
+    }
+
+    .buttons-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .btn-small {
+      font-size: 0.9rem;
+      padding: 0.7rem;
+      line-height: 1.2;
+    }
+    .btn-full {
+      grid-column: span 2;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+
+    <!-- PANTALLA INICIAL / CONFIG -->
+    <section id="screen-config" class="screen">
+      <h1>Vocabulary 1º ESO</h1>
+
+      <div class="section-card">
+        <h2>Modo</h2>
+        <label for="cfg-direction">Dirección de traducción</label>
+        <select id="cfg-direction">
+          <option value="es-en">Español → Inglés</option>
+          <option value="en-es">Inglés → Español</option>
+        </select>
+
+        <h2>Orden</h2>
+        <label for="cfg-order">Orden de repaso</label>
+        <select id="cfg-order">
+          <option value="random">Aleatorio</option>
+          <option value="sequential">Secuencial</option>
+        </select>
+
+        <h2>Tema</h2>
+        <label for="cfg-topic">Tema</label>
+        <select id="cfg-topic"></select>
+        <div id="cfg-no-difficult-msg" class="danger-text" style="display:none;">
+          No hay palabras difíciles guardadas para este tema
+        </div>
+
+        <h2>Palabras difíciles</h2>
+        <label for="cfg-difficultOnly">¿Solo difíciles?</label>
+        <select id="cfg-difficultOnly">
+          <option value="no">No, todas las palabras</option>
+          <option value="yes">Solo las marcadas como difíciles</option>
+        </select>
+
+        <h2>Tipo</h2>
+        <label for="cfg-modeType">Modo de estudio</label>
+        <select id="cfg-modeType">
+          <option value="reiniciar">Reiniciar (seguir fallos)</option>
+          <option value="completar">Completar (resumen al final)</option>
+        </select>
+
+        <h2>Modo examen</h2>
+        <div class="row-inline">
+          <label for="cfg-examMode" style="margin-bottom:0;">Ocultar pistas / sin feedback hasta el final</label>
+          <input type="checkbox" id="cfg-examMode" />
+        </div>
+
+        <button class="btn" id="btn-start">Continuar</button>
+
+        <button class="btn" id="btn-resume" style="display:none;">
+          Continuar donde lo dejé
+        </button>
+
+        <div class="muted" style="margin-top:0.5rem;">
+          Esta app guarda tu progreso en este dispositivo.
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA QUIZ -->
+    <section id="screen-quiz" class="screen" style="display:none;">
+      <div class="section-card">
+        <div class="question-block">Traduce:</div>
+        <div id="quiz-word" class="question-word">...</div>
+
+        <label for="answer-input" style="margin-top:1rem;">Tu respuesta</label>
+        <input id="answer-input" type="text" autocomplete="off" />
+
+        <div class="buttons-grid">
+          <button class="btn btn-small btn-full" id="btn-check">Comprobar</button>
+
+          <button class="btn btn-small" id="btn-show" >Mostrar solución</button>
+          <button class="btn btn-small" id="btn-skip" >Saltar</button>
+          <button class="btn btn-small" id="btn-hard" >Marcar como difícil</button>
+
+          <button class="btn btn-small btn-full" id="btn-next" style="display:none;">
+            Siguiente
+          </button>
+        </div>
+
+        <div class="progress-bar-outer">
+          <div class="progress-bar-inner" id="progress-bar"></div>
+        </div>
+
+        <div class="stats" id="quiz-stats">
+          Aciertos: 0 · Intentos: 0 · Tema: ... · 0/0
+        </div>
+
+        <div class="chips" id="quiz-chips"></div>
+
+        <div id="feedback-card" class="feedback-card"></div>
+
+        <div id="extra-info-card" class="extra-info-card">
+          <h3>Información extra</h3>
+          <div><strong>Sinónimos EN:</strong> <span id="extra-en"></span></div>
+          <div style="margin-top:0.25rem;"><strong>Sinónimos ES:</strong> <span id="extra-es"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA RESUMEN FINAL -->
+    <section id="screen-summary" class="screen" style="display:none;">
+      <h1>Resumen</h1>
+      <div class="section-card">
+        <div id="summary-headline" class="question-word" style="font-size:1.1rem;">
+          ...
+        </div>
+        <div class="stats" id="summary-stats"></div>
+
+        <div class="summary-list">
+          <h4>Aciertos</h4>
+          <div id="summary-correct"></div>
+        </div>
+
+        <div class="summary-list">
+          <h4>Fallos</h4>
+          <div id="summary-wrong"></div>
+        </div>
+
+        <button class="btn" id="btn-restart">Volver a empezar</button>
+        <button class="btn" id="btn-go-config" style="margin-top:0.5rem;">
+          Cambiar configuración
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /************************************
+     * Utilidades generales
+     ************************************/
+    function normalizeSpanish(str) {
+      // Quitar acentos y tildes para comparar español sin penalizar
+      return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // elimina diacríticos
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function normalizeGeneric(str) {
+      // Comparación genérica sin espacios extremos ni mayúsculas
+      return str.toLowerCase().trim();
+    }
+
+    function splitSynonyms(raw) {
+      // Separa por ; , / o ,
+      if (!raw) return [];
+      return raw
+        .split(/[,;/]/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+    }
+
+    /************************************
+     * Estado global en memoria
+     ************************************/
+    const EXCEL_FILE = "Lista vocabulario.xlsx";
+    const STORAGE_KEY = "pabloVocabProgress_v1";
+
+    // Datos cargados de Excel
+    let fullWordList = []; // array de {en,enSyn[],es,esSyn[],tema,nombreTema,topicFull}
+
+    // Sesión actual de estudio (después de pantalla config)
+    let session = {
+      direction: "es-en", // "es-en" o "en-es"
+      order: "random", // "random" o "sequential"
+      topicFull: null, // "Tema X - Nombre"
+      difficultOnly: "no", // "yes" o "no"
+      modeType: "reiniciar", // "reiniciar" | "completar"
+      examMode: false,
+
+      // baraja actual de tarjetas
+      cards: [], // array de objetos word
+      currentIndex: 0,
+
+      // estadísticas
+      attempts: 0,
+      corrects: 0,
+      // Para "reiniciar": vamos guardando aciertos/fallos
+      gotRight: new Set(),   // indices internos (posición en cards)
+      gotWrong: new Set(),   // idem
+
+      // Palabras difíciles globales (cargadas/guardadas en localStorage separado)
+      difficultWords: {}, // {topicFull: { "finger|dedo de la mano": true, ... }}
+
+      // Para modo examen:
+      examAnswers: [], // {idx, userAnswer, isCorrect, correctMain, shownWord}
+    };
+
+    /************************************
+     * Carga / guardado en localStorage
+     ************************************/
+    function loadStoredState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        return obj;
+      } catch(e) {
+        return null;
+      }
+    }
+
+    function saveStoredState() {
+      const data = {
+        session,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    // gestion de difíciles
+    function loadDifficultWords() {
+      const raw = localStorage.getItem("pabloVocabDifficult_v1");
+      if (!raw) return {};
+      try {
+        return JSON.parse(raw);
+      } catch(e) {
+        return {};
+      }
+    }
+
+    function saveDifficultWords() {
+      localStorage.setItem("pabloVocabDifficult_v1", JSON.stringify(session.difficultWords));
+    }
+
+    function markCurrentAsDifficult() {
+      const card = session.cards[session.currentIndex];
+      if (!card) return;
+      const keyTopic = session.topicFull;
+      const sig = card.en + "|" + card.es;
+      if (!session.difficultWords[keyTopic]) {
+        session.difficultWords[keyTopic] = {};
+      }
+      session.difficultWords[keyTopic][sig] = true;
+      saveDifficultWords();
+      alert("Marcada como difícil.");
+    }
+
+    /************************************
+     * Lectura del Excel
+     ************************************/
+    async function fetchExcelData() {
+      // Descarga binaria
+      const resp = await fetch(EXCEL_FILE + "?v=1");
+      const ab = await resp.arrayBuffer();
+      const wb = XLSX.read(ab, { type: "array" });
+
+      // Asumimos primera hoja
+      const firstSheetName = wb.SheetNames[0];
+      const ws = wb.Sheets[firstSheetName];
+
+      // Convertir a objetos
+      // Cabeceras esperadas EXACTAS:
+      // "Inglés", "Sinónimo inglés",
+      // "Español", "Sinónimo español",
+      // "Tema", "Nombre de tema"
+      const rows = XLSX.utils.sheet_to_json(ws, {defval:""});
+
+      fullWordList = rows.map(r => {
+        const en = (r["Inglés"] || "").toString().trim();
+        const enSyn = splitSynonyms(r["Sinónimo inglés"] || "");
+        const es = (r["Español"] || "").toString().trim();
+        const esSyn = splitSynonyms(r["Sinónimo español"] || "");
+        const tema = (r["Tema"] || "").toString().trim();
+        const nombreTema = (r["Nombre de tema"] || "").toString().trim();
+
+        return {
+          en,
+          enSyn,
+          es,
+          esSyn,
+          tema,
+          nombreTema,
+          topicFull: (tema + " - " + nombreTema).trim()
+        };
+      }).filter(w => w.en || w.es); // descarta filas vacías
+    }
+
+    /************************************
+     * Construcción de opciones de Tema
+     ************************************/
+    function uniqueTopicsFromData() {
+      const set = new Set();
+      fullWordList.forEach(w => {
+        if (w.topicFull) set.add(w.topicFull);
+      });
+      return Array.from(set).sort();
+    }
+
+    function refreshTopicSelect() {
+      const sel = document.getElementById("cfg-topic");
+      sel.innerHTML = "";
+      uniqueTopicsFromData().forEach(topic => {
+        const opt = document.createElement("option");
+        opt.value = topic;
+        opt.textContent = topic;
+        sel.appendChild(opt);
+      });
+    }
+
+    function updateNoDifficultMessage() {
+      // Comprueba si hay difíciles para el tema elegido
+      const topic = document.getElementById("cfg-topic").value;
+      const diffOnly = document.getElementById("cfg-difficultOnly").value;
+      const box = document.getElementById("cfg-no-difficult-msg");
+
+      if (diffOnly === "yes") {
+        const hasAny = session.difficultWords[topic] &&
+                       Object.keys(session.difficultWords[topic]).length > 0;
+        box.style.display = hasAny ? "none" : "block";
+      } else {
+        box.style.display = "none";
+      }
+    }
+
+    /************************************
+     * Preparar la sesión tras la config
+     ************************************/
+    function buildCardsFromConfig() {
+      const direction = document.getElementById("cfg-direction").value;
+      const order = document.getElementById("cfg-order").value;
+      const topicFull = document.getElementById("cfg-topic").value;
+      const difficultOnly = document.getElementById("cfg-difficultOnly").value;
+      const modeType = document.getElementById("cfg-modeType").value;
+      const examMode = document.getElementById("cfg-examMode").checked;
+
+      session.direction = direction;
+      session.order = order;
+      session.topicFull = topicFull;
+      session.difficultOnly = difficultOnly;
+      session.modeType = modeType;
+      session.examMode = examMode;
+      session.attempts = 0;
+      session.corrects = 0;
+      session.currentIndex = 0;
+      session.gotRight = new Set();
+      session.gotWrong = new Set();
+      session.examAnswers = [];
+
+      // filtrado por tema
+      let pool = fullWordList.filter(w => w.topicFull === topicFull);
+
+      // si solo difíciles
+      if (difficultOnly === "yes") {
+        const diffs = session.difficultWords[topicFull] || {};
+        pool = pool.filter(w => diffs[w.en + "|" + w.es]);
+      }
+
+      // Orden
+      if (order === "random") {
+        pool = pool
+          .map(v => ({v, sort: Math.random()}))
+          .sort((a,b)=>a.sort-b.sort)
+          .map(o=>o.v);
+      }
+
+      session.cards = pool;
+    }
+
+    /************************************
+     * Render de la tarjeta actual
+     ************************************/
+    function getCurrentCard() {
+      return session.cards[session.currentIndex];
+    }
+
+    function updateProgressBar() {
+      const bar = document.getElementById("progress-bar");
+      const total = session.cards.length || 1;
+      const done = session.currentIndex + 1;
+      const pct = Math.round(done/total*100);
+      bar.style.width = pct + "%";
+    }
+
+    function updateStatsLine() {
+      const st = document.getElementById("quiz-stats");
+      const total = session.cards.length;
+      const pos = session.currentIndex + 1;
+      const topic = session.topicFull || "...";
+      st.textContent =
+        "Aciertos: " + session.corrects +
+        " · Intentos: " + session.attempts +
+        " · Tema: " + topic +
+        " · " + pos + "/" + total;
+    }
+
+    function showCurrentCard() {
+      const card = getCurrentCard();
+      if (!card) {
+        // No hay cartas -> pasamos a resumen final directamente
+        finishBlock();
+        return;
+      }
+
+      // palabra mostrada según dirección
+      const wordToShow = (session.direction === "es-en") ? card.es : card.en;
+
+      document.getElementById("quiz-word").textContent = wordToShow || "...";
+      document.getElementById("answer-input").value = "";
+
+      // chips de tema
+      const chipsBox = document.getElementById("quiz-chips");
+      chipsBox.innerHTML = "";
+      if (card.topicFull) {
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        chip.textContent = card.topicFull;
+        chipsBox.appendChild(chip);
+      }
+
+      // ocultar feedback y extra info al cargar nueva carta
+      const fb = document.getElementById("feedback-card");
+      fb.style.display = "none";
+      fb.className = "feedback-card";
+      fb.textContent = "";
+
+      const extra = document.getElementById("extra-info-card");
+      extra.style.display = "none";
+      document.getElementById("extra-en").textContent = "";
+      document.getElementById("extra-es").textContent = "";
+
+      // botones
+      document.getElementById("btn-next").style.display = "none";
+      document.getElementById("btn-check").style.display = "block";
+
+      // exam mode oculta herramientas
+      const hideTools = session.examMode;
+      document.getElementById("btn-show").style.display = hideTools ? "none" : "block";
+      document.getElementById("btn-skip").style.display = hideTools ? "none" : "block";
+      document.getElementById("btn-hard").style.display = hideTools ? "none" : "block";
+
+      updateProgressBar();
+      updateStatsLine();
+      saveStoredState();
+    }
+
+    /************************************
+     * Corrección de respuesta
+     ************************************/
+    function isAnswerCorrect(userAns, card) {
+      // Dependiendo de la dirección, definimos soluciones válidas:
+      // es-en: mostramos español, esperamos inglés
+      // en-es: mostramos inglés, esperamos español(sin tildes)
+      let mainSolution, syns, normalizeFn;
+
+      if (session.direction === "es-en") {
+        mainSolution = card.en;
+        syns = card.enSyn || [];
+        normalizeFn = normalizeGeneric; // inglés normalizamos simple
+      } else {
+        mainSolution = card.es;
+        syns = card.esSyn || [];
+        normalizeFn = normalizeSpanish; // español: quitar tildes
+      }
+
+      const targetList = [mainSolution, ...syns].map(s => s.toString());
+
+      const normUser = normalizeFn(userAns);
+      for (const cand of targetList) {
+        const normCand = normalizeFn(cand);
+        if (normUser === normCand) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function buildFeedbackText(correct, userAns, card) {
+      // Mensaje principal verde/rojo (solo si NO examMode)
+      // También mostrar solución principal y sinónimos
+      const fb = document.getElementById("feedback-card");
+      const extra = document.getElementById("extra-info-card");
+
+      if (session.examMode) {
+        // En modo examen NO mostramos feedback inmediato ni solución.
+        fb.style.display = "none";
+        extra.style.display = "none";
+        return;
+      }
+
+      const isEsToEn = (session.direction === "es-en");
+
+      // solución principal esperada
+      const mainSolution = isEsToEn ? card.en : card.es;
+      const synEN = card.enSyn.join(", ");
+      const synES = card.esSyn.join(", ");
+
+      fb.style.display = "block";
+      if (correct) {
+        fb.className = "feedback-card feedback-ok";
+        fb.innerHTML = "Acierto. ¡Muy bien!<br>Solución principal: <strong>" +
+          mainSolution + "</strong>";
+      } else {
+        fb.className = "feedback-card feedback-bad";
+        fb.innerHTML = "Fallo. ¡Revisa tu respuesta!<br>Solución principal: <strong>" +
+          mainSolution + "</strong>";
+      }
+
+      // Mostrar carta extra con sinónimos EN / ES
+      extra.style.display = "block";
+      document.getElementById("extra-en").textContent = synEN || "(ninguno)";
+      document.getElementById("extra-es").textContent = synES || "(ninguno)";
+    }
+
+    /************************************
+     * Avanzar tarjeta / flujo botones
+     ************************************/
+    function checkAnswer() {
+      const card = getCurrentCard();
+      if (!card) return;
+
+      const userAns = document.getElementById("answer-input").value || "";
+      const correct = isAnswerCorrect(userAns, card);
+
+      session.attempts++;
+      if (correct) {
+        session.corrects++;
+        session.gotRight.add(session.currentIndex);
+      } else {
+        session.gotWrong.add(session.currentIndex);
+      }
+
+      // Para modo examen, guardamos pero no mostramos feedback aún
+      if (session.examMode) {
+        const mainSolution = (session.direction === "es-en") ? card.en : card.es;
+        const shownWord = (session.direction === "es-en") ? card.es : card.en;
+        session.examAnswers.push({
+          idx: session.currentIndex,
+          userAnswer: userAns,
+          isCorrect: correct,
+          correctMain: mainSolution,
+          shownWord
+        });
+      }
+
+      buildFeedbackText(correct, userAns, card);
+
+      // Botones: ocultar check / mostrar next
+      document.getElementById("btn-check").style.display = "none";
+      document.getElementById("btn-next").style.display = "block";
+      saveStoredState();
+      updateStatsLine();
+    }
+
+    function showSolutionAndSkipMarkWrong() {
+      const card = getCurrentCard();
+      if (!card) return;
+
+      // contar como intento fallido si aún no se comprobó
+      if (document.getElementById("btn-check").style.display !== "none") {
+        session.attempts++;
+        session.gotWrong.add(session.currentIndex);
+        const isEsToEn = (session.direction === "es-en");
+        const mainSolution = isEsToEn ? card.en : card.es;
+        buildFeedbackText(false, "", card);
+
+        if (session.examMode) {
+          const shownWord = isEsToEn ? card.es : card.en;
+          session.examAnswers.push({
+            idx: session.currentIndex,
+            userAnswer: "(Mostrada solución)",
+            isCorrect: false,
+            correctMain: mainSolution,
+            shownWord
+          });
+        }
+
+        document.getElementById("btn-check").style.display = "none";
+        document.getElementById("btn-next").style.display = "block";
+        saveStoredState();
+        updateStatsLine();
+      }
+    }
+
+    function skipWithoutAnswer() {
+      // saltar la palabra actual sin responder
+      const card = getCurrentCard();
+      if (!card) return;
+
+      // lo consideramos intento fallido para estadísticas
+      session.attempts++;
+      session.gotWrong.add(session.currentIndex);
+
+      if (session.examMode) {
+        const isEsToEn = (session.direction === "es-en");
+        const mainSolution = isEsToEn ? card.en : card.es;
+        const shownWord = isEsToEn ? card.es : card.en;
+        session.examAnswers.push({
+          idx: session.currentIndex,
+          userAnswer: "(Saltada)",
+          isCorrect: false,
+          correctMain: mainSolution,
+          shownWord
+        });
+      }
+
+      // en modo normal, feedback de fallo
+      buildFeedbackText(false, "", card);
+
+      document.getElementById("btn-check").style.display = "none";
+      document.getElementById("btn-next").style.display = "block";
+      saveStoredState();
+      updateStatsLine();
+    }
+
+    function goNextCard() {
+      session.currentIndex++;
+
+      // ¿hemos acabado las cartas?
+      if (session.currentIndex >= session.cards.length) {
+        finishBlock();
+      } else {
+        showCurrentCard();
+      }
+    }
+
+    /************************************
+     * Fin de bloque / resumen
+     ************************************/
+    function finishBlock() {
+      // Lógica "reiniciar": repetir sólo fallos
+      if (session.modeType === "reiniciar") {
+        // buscamos los índices fallados
+        const wrongIdxs = Array.from(session.gotWrong);
+        if (wrongIdxs.length > 0 &&
+            wrongIdxs.length !== session.cards.length) {
+          // Creamos un nuevo subset sólo con las falladas
+          const newCards = wrongIdxs.map(i => session.cards[i]);
+          session.cards = newCards;
+          session.currentIndex = 0;
+          session.gotRight = new Set();
+          session.gotWrong = new Set();
+          // ojo: mantenemos attempts/corrects para stats globales
+          showCurrentCard();
+          saveStoredState();
+          return;
+        }
+      }
+
+      // Si llegamos aquí, mostrar resumen final
+      renderSummaryScreen();
+      saveStoredState();
+    }
+
+    function renderSummaryScreen() {
+      // Mostrar pantalla summary
+      showScreen("screen-summary");
+
+      // Construir listas correctas / falladas según último ciclo
+      // En modo examen, usamos session.examAnswers como fuente
+      let finalData = [];
+      if (session.examMode) {
+        // examAnswers guarda cada pregunta real
+        finalData = session.examAnswers.map(info => {
+          const c = session.cards[info.idx] || {};
+          return {
+            shownWord: info.shownWord,
+            correctMain: info.correctMain,
+            isCorrect: info.isCorrect,
+            userAnswer: info.userAnswer
+          };
+        });
+      } else {
+        // modo normal: derivar de gotRight/gotWrong
+        session.cards.forEach((card, idx) => {
+          finalData.push({
+            shownWord: (session.direction==="es-en")?card.es:card.en,
+            correctMain:(session.direction==="es-en")?card.en:card.es,
+            isCorrect: session.gotRight.has(idx),
+            userAnswer:""
+          });
+        });
+      }
+
+      const correctList = finalData.filter(x => x.isCorrect);
+      const wrongList   = finalData.filter(x => !x.isCorrect);
+
+      const headline = document.getElementById("summary-headline");
+      headline.textContent = "Bloque terminado";
+
+      const summaryStats = document.getElementById("summary-stats");
+      summaryStats.textContent =
+        "Aciertos: " + session.corrects +
+        " · Intentos: " + session.attempts +
+        " · Total tarjetas en este bloque: " + session.cards.length;
+
+      const correctBox = document.getElementById("summary-correct");
+      const wrongBox   = document.getElementById("summary-wrong");
+      correctBox.innerHTML = "";
+      wrongBox.innerHTML = "";
+
+      correctList.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "summary-item";
+        div.textContent =
+          item.shownWord + " → " + item.correctMain + " ✓";
+        correctBox.appendChild(div);
+      });
+      wrongList.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "summary-item";
+        div.textContent =
+          item.shownWord + " → " + item.correctMain + " ✗";
+        wrongBox.appendChild(div);
+      });
+    }
+
+    /************************************
+     * Cambio de pantallas
+     ************************************/
+    function showScreen(id) {
+      document.querySelectorAll(".screen").forEach(sec=>{
+        sec.style.display = "none";
+      });
+      document.getElementById(id).style.display = "block";
+    }
+
+    /************************************
+     * EVENTOS DE LA UI
+     ************************************/
+    document.getElementById("cfg-topic").addEventListener("change", updateNoDifficultMessage);
+    document.getElementById("cfg-difficultOnly").addEventListener("change", updateNoDifficultMessage);
+
+    document.getElementById("btn-start").addEventListener("click", () => {
+      buildCardsFromConfig();
+
+      // si no hay cartas (por ejemplo, sin difíciles)
+      if (session.cards.length === 0) {
+        alert("No hay palabras para este filtro.");
+        return;
+      }
+
+      showScreen("screen-quiz");
+      showCurrentCard();
+    });
+
+    document.getElementById("btn-resume").addEventListener("click", () => {
+      // Restauramos session desde localStorage
+      const stored = loadStoredState();
+      if (!stored || !stored.session) return;
+      session = stored.session;
+      // También re-cargamos difíciles
+      session.difficultWords = loadDifficultWords();
+      // Mostrar quiz o summary según corresponda
+      if (session.currentIndex >= (session.cards?.length||0)) {
+        renderSummaryScreen();
+      } else {
+        showScreen("screen-quiz");
+        showCurrentCard();
+      }
+    });
+
+    // Quiz screen
+    document.getElementById("btn-check").addEventListener("click", checkAnswer);
+    document.getElementById("btn-show").addEventListener("click", showSolutionAndSkipMarkWrong);
+    document.getElementById("btn-skip").addEventListener("click", skipWithoutAnswer);
+    document.getElementById("btn-hard").addEventListener("click", () => {
+      markCurrentAsDifficult();
+    });
+    document.getElementById("btn-next").addEventListener("click", goNextCard);
+
+    // Summary screen
+    document.getElementById("btn-restart").addEventListener("click", () => {
+      // volver a empezar manteniendo misma config actual
+      // simplemente volvemos a la pantalla quiz con un rebuild completo
+      buildCardsFromConfig();
+      if (session.cards.length === 0) {
+        alert("No hay palabras para este filtro.");
+        return;
+      }
+      showScreen("screen-quiz");
+      showCurrentCard();
+    });
+
+    document.getElementById("btn-go-config").addEventListener("click", () => {
+      showScreen("screen-config");
+    });
+
+    /************************************
+     * SERVICE WORKER (PWA OFFLINE)
+     ************************************/
+    // Registramos un service worker mínimo en caliente desde un blob.
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+      const CACHE_NAME = 'pablo-vocab-cache-v1';
+      const FILES_TO_CACHE = [
+        './',
+        './index.html?v=1',
+        './manifest.webmanifest?v=1',
+        './icon-192.png?v=1',
+        './icon-512.png?v=1',
+        './${EXCEL_FILE}?v=1'
+      ];
+
+      self.addEventListener('install', (evt) => {
+        evt.waitUntil(
+          caches.open(CACHE_NAME).then((cache) => {
+            return cache.addAll(FILES_TO_CACHE);
+          })
+        );
+        self.skipWaiting();
+      });
+
+      self.addEventListener('activate', (evt) => {
+        evt.waitUntil(
+          caches.keys().then((keyList) => {
+            return Promise.all(keyList.map((key) => {
+              if (key !== CACHE_NAME) {
+                return caches.delete(key);
+              }
+            }));
+          })
+        );
+        self.clients.claim();
+      });
+
+      self.addEventListener('fetch', (evt) => {
+        evt.respondWith(
+          caches.match(evt.request).then((resp) => {
+            return resp || fetch(evt.request);
+          })
+        );
+      });
+      `;
+      const blob = new Blob([swCode], {type: 'application/javascript'});
+      const swUrl = URL.createObjectURL(blob);
+      navigator.serviceWorker.register(swUrl);
+    }
+
+    /************************************
+     * INICIALIZACIÓN
+     ************************************/
+    (async function init() {
+      // cargar difíciles
+      session.difficultWords = loadDifficultWords();
+
+      // cargar excel
+      await fetchExcelData();
+
+      // rellenar select de temas
+      refreshTopicSelect();
+
+      // mostrar/ocultar botón "continuar donde lo dejé"
+      const stored = loadStoredState();
+      const btnResume = document.getElementById("btn-resume");
+      if (stored && stored.session && stored.session.cards && stored.session.cards.length>0) {
+        btnResume.style.display = "block";
+      } else {
+        btnResume.style.display = "none";
+      }
+
+      // mensaje de "no hay difíciles"
+      updateNoDifficultMessage();
+
+      // mostrar pantalla config
+      showScreen("screen-config");
+    })();
+  </script>
+</body>
+</html>

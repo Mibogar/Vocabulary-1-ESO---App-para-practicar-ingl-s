@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+
+  <title>Vocabulary 1º ESO</title>
+
+  <!-- Manifest / PWA -->
+  <link rel="manifest" href="manifest.webmanifest?v=3">
+  <link rel="icon" href="icon-192.png?v=3" sizes="192x192">
+  <link rel="icon" href="icon-512.png?v=3" sizes="512x512">
+  <link rel="apple-touch-icon" href="icon-192.png?v=3">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Vocabulary 1º ESO">
+
+  <!-- SheetJS para leer Excel -->
+  <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #111111;
+      --fg-dim: #555555;
+      --accent-ok-bg: #d1fae5;
+      --accent-ok-fg: #065f46;
+      --accent-bad-bg: #fee2e2;
+      --accent-bad-fg: #7f1d1d;
+      --border: #dddddd;
+      --accent-chip-bg: #f3f4f6;
+      --accent-chip-fg: #111111;
+      --btn-bg: #111111;
+      --btn-fg: #ffffff;
+      --btn-bg-disabled: #999999;
+      --card-bg: #f9fafb;
+    }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 4rem;
+    }
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+      text-align: center;
+    }
+    h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      color: var(--fg-dim);
+    }
+    select, input[type="text"], input[type="checkbox"] {
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 1rem;
+      padding: 0.6rem 0.7rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--fg);
+    }
+    .row-inline {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .row-inline > label {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    .row-inline > input[type="checkbox"] {
+      flex: 0 0 auto;
+      width: auto;
+    }
+    .btn {
+      background: var(--btn-bg);
+      color: var(--btn-fg);
+      border: none;
+      border-radius: 0.75rem;
+      padding: 0.8rem 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 0.75rem;
+    }
+    .btn[disabled] {
+      background: var(--btn-bg-disabled);
+      cursor: not-allowed;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+    }
+    .chip {
+      background: var(--accent-chip-bg);
+      color: var(--accent-chip-fg);
+      padding: 0.3rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      line-height: 1.2;
+      font-weight: 500;
+    }
+    .question-block {
+      font-size: 0.9rem;
+      color: var(--fg-dim);
+      margin-bottom: 0.25rem;
+    }
+    .question-word {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--fg);
+      word-wrap: break-word;
+    }
+    .stats {
+      font-size: 0.8rem;
+      color: var(--fg-dim);
+      margin-top: 0.75rem;
+      line-height: 1.4;
+    }
+    .progress-bar-outer {
+      width: 100%;
+      height: 0.5rem;
+      background: #e5e7eb;
+      border-radius: 0.5rem;
+      margin-top: 1rem;
+      overflow: hidden;
+    }
+    .progress-bar-inner {
+      height: 100%;
+      background: var(--fg);
+      width: 0%;
+      transition: width 0.2s;
+    }
+    .feedback-card {
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      line-height: 1.4;
+      display: none;
+    }
+    .feedback-ok {
+      background: var(--accent-ok-bg);
+      color: var(--accent-ok-fg);
+    }
+    .feedback-bad {
+      background: var(--accent-bad-bg);
+      color: var(--accent-bad-fg);
+    }
+    .extra-info-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      display: none;
+    }
+    .extra-info-card h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .summary-list {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .summary-list h4 {
+      margin: 0 0 0.5rem;
+      font-size: 0.8rem;
+    }
+    .summary-item {
+      margin-bottom: 0.5rem;
+    }
+    .danger-text {
+      color: var(--accent-bad-fg);
+      font-size: 0.8rem;
+    }
+    .muted {
+      color: var(--fg-dim);
+      font-size: 0.8rem;
+    }
+
+    .buttons-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .btn-small {
+      font-size: 0.9rem;
+      padding: 0.7rem;
+      line-height: 1.2;
+    }
+    .btn-full {
+      grid-column: span 2;
+    }
+
+    /* Botón salir arriba a la derecha en el test */
+    .exit-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .btn-exit {
+      background: transparent;
+      color: var(--accent-bad-fg);
+      border: 1px solid var(--accent-bad-fg);
+      border-radius: 0.5rem;
+      padding: 0.4rem 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-not-diff {
+      background: transparent;
+      color: #065f46;
+      border: 1px solid #065f46;
+      border-radius: 0.5rem;
+      padding: 0.4rem 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: none;
+    }
+
+    /* Modal salir */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .modal-card {
+      background: #ffffff;
+      border-radius: 0.75rem;
+      max-width: 320px;
+      width: calc(100% - 2rem);
+      padding: 1rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      font-size: 0.9rem;
+      color: var(--fg);
+    }
+    .modal-card h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .modal-card p {
+      margin: 0 0 1rem;
+      color: var(--fg-dim);
+      line-height: 1.4;
+    }
+    .modal-btns {
+      display: grid;
+      gap: 0.5rem;
+    }
+    .modal-btns button {
+      padding: 0.7rem 0.8rem;
+      border-radius: 0.6rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-save-exit {
+      background: var(--btn-bg);
+      color: var(--btn-fg);
+    }
+    .btn-exit-nosave {
+      background: #ffffff;
+      color: var(--accent-bad-fg);
+      border: 1px solid var(--accent-bad-fg);
+    }
+    .btn-exit-cancel {
+      background: #f3f4f6;
+      color: var(--fg);
+      border: 1px solid var(--border);
+    }
+
+    /* Pantalla TOP FALLOS */
+    .fail-item {
+      font-size: 0.9rem;
+      line-height: 1.4;
+      margin-bottom: 0.75rem;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.6rem 0.75rem;
+    }
+    .fail-main {
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .fail-count {
+      color: var(--fg-dim);
+      font-size: 0.8rem;
+    }
+
+    .mini-progress-box {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      margin-top: 0.75rem;
+      color: var(--fg);
+    }
+    .mini-progress-box strong {
+      color: var(--fg);
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+
+    <!-- PANTALLA INICIAL / CONFIG -->
+    <section id="screen-config" class="screen">
+      <h1>Vocabulary 1º ESO</h1>
+
+      <div class="section-card">
+        <h2>Modo</h2>
+        <label for="cfg-direction">Dirección de traducción</label>
+        <select id="cfg-direction">
+          <!-- por defecto Español → Inglés -->
+          <option value="es-en" selected>Español → Inglés</option>
+          <option value="en-es">Inglés → Español</option>
+        </select>
+
+        <h2>Orden</h2>
+        <label for="cfg-order">Orden de repaso</label>
+        <select id="cfg-order">
+          <!-- por defecto Secuencial -->
+          <option value="sequential" selected>Secuencial</option>
+          <option value="random">Aleatorio</option>
+        </select>
+
+        <h2>Tema</h2>
+        <label for="cfg-topic">Tema</label>
+        <select id="cfg-topic"></select>
+        <div id="cfg-no-difficult-msg" class="danger-text" style="display:none;">
+          No hay palabras difíciles guardadas para este tema
+        </div>
+
+        <h2>Palabras difíciles</h2>
+        <label for="cfg-difficultOnly">¿Solo difíciles?</label>
+        <select id="cfg-difficultOnly">
+          <option value="no">No, todas las palabras</option>
+          <option value="yes">Solo las marcadas como difíciles</option>
+        </select>
+
+        <h2>Tipo</h2>
+        <label for="cfg-modeType">Modo de estudio</label>
+        <select id="cfg-modeType">
+          <option value="reiniciar">Reiniciar (seguir fallos)</option>
+          <option value="completar">Completar (resumen al final)</option>
+        </select>
+
+        <h2>Modo examen</h2>
+        <div class="row-inline">
+          <label for="cfg-examMode" style="margin-bottom:0;">Ocultar pistas / sin feedback hasta el final</label>
+          <input type="checkbox" id="cfg-examMode" />
+        </div>
+
+        <!-- Botón principal -->
+        <button class="btn" id="btn-start">Iniciar</button>
+
+        <!-- Botón continuar sesión previa -->
+        <button class="btn" id="btn-resume" style="display:none;">
+          Continuar donde lo dejé
+        </button>
+
+        <!-- Botón ver ranking de fallos -->
+        <button class="btn" id="btn-show-fails" style="background:#444;">
+          Palabras que más me cuestan
+        </button>
+
+        <!-- Bloque de progreso motivacional -->
+        <div id="home-progress-box" class="mini-progress-box" style="display:none;">
+          <div><strong>Último resultado:</strong> <span id="home-last-pct">--</span>% de aciertos</div>
+        </div>
+
+        <div class="muted" style="margin-top:0.5rem;">
+          Esta app guarda tu progreso en este dispositivo.
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA QUIZ -->
+    <section id="screen-quiz" class="screen" style="display:none;">
+      <div class="section-card">
+
+        <div class="exit-row">
+          <!-- Botón salir -->
+          <button class="btn-exit" id="btn-exit-quiz">Salir</button>
+          <!-- Botón quitar de difíciles (solo si aplica) -->
+          <button class="btn-not-diff" id="btn-remove-diff">Ya no es difícil</button>
+        </div>
+
+        <div class="question-block">Traduce:</div>
+        <div id="quiz-word" class="question-word">...</div>
+
+        <label for="answer-input" style="margin-top:1rem;">Tu respuesta</label>
+        <input id="answer-input" type="text" autocomplete="off" />
+
+        <div class="buttons-grid">
+          <button class="btn btn-small btn-full" id="btn-check">Comprobar</button>
+
+          <button class="btn btn-small" id="btn-show">Mostrar solución</button>
+          <button class="btn btn-small" id="btn-skip">Saltar</button>
+          <button class="btn btn-small" id="btn-hard">Marcar como difícil</button>
+
+          <button class="btn btn-small btn-full" id="btn-next" style="display:none;">
+            Siguiente
+          </button>
+        </div>
+
+        <div class="progress-bar-outer">
+          <div class="progress-bar-inner" id="progress-bar"></div>
+        </div>
+
+        <div class="stats" id="quiz-stats">
+          Aciertos: 0 · Intentos: 0 · Tema: ... · 0/0
+        </div>
+
+        <div class="chips" id="quiz-chips"></div>
+
+        <div id="feedback-card" class="feedback-card"></div>
+
+        <div id="extra-info-card" class="extra-info-card">
+          <h3>Información extra</h3>
+          <div><strong>Sinónimos EN:</strong> <span id="extra-en"></span></div>
+          <div style="margin-top:0.25rem;"><strong>Sinónimos ES:</strong> <span id="extra-es"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA RESUMEN FINAL -->
+    <section id="screen-summary" class="screen" style="display:none;">
+      <h1>Resumen</h1>
+      <div class="section-card">
+        <div id="summary-headline" class="question-word" style="font-size:1.1rem;">
+          ...
+        </div>
+        <div class="stats" id="summary-stats"></div>
+
+        <!-- Bloque mini progreso comparativo -->
+        <div class="mini-progress-box" id="summary-progress-box" style="display:none;">
+          <div><strong>Sesión anterior:</strong> <span id="summary-prev-pct">--</span>%</div>
+          <div><strong>Hoy:</strong> <span id="summary-current-pct">--</span>% ✅</div>
+        </div>
+
+        <div class="summary-list">
+          <h4>Aciertos</h4>
+          <div id="summary-correct"></div>
+        </div>
+
+        <div class="summary-list">
+          <h4>Fallos</h4>
+          <div id="summary-wrong"></div>
+        </div>
+
+        <button class="btn" id="btn-restart">Volver a empezar</button>
+        <button class="btn" id="btn-go-config" style="margin-top:0.5rem;">
+          Cambiar configuración
+        </button>
+      </div>
+    </section>
+
+    <!-- PANTALLA TOP FALLOS -->
+    <section id="screen-fails" class="screen" style="display:none;">
+      <h1>Más difíciles</h1>
+      <div class="section-card">
+        <div class="muted" style="font-size:0.9rem;line-height:1.4;">
+          Estas son las 10 palabras que más has fallado.
+        </div>
+
+        <div id="fails-list" style="margin-top:1rem;"></div>
+
+        <button class="btn" id="btn-practice-fails" style="margin-top:1rem;">
+          Practicar solo estas
+        </button>
+
+        <button class="btn" id="btn-back-home" style="margin-top:0.5rem;">
+          Volver
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL SALIR -->
+  <div class="modal-backdrop" id="exit-modal">
+    <div class="modal-card">
+      <h3>¿Qué quieres hacer?</h3>
+      <p>Si sales sin guardar, perderás el progreso de esta ronda.</p>
+      <div class="modal-btns">
+        <button class="btn-save-exit" id="modal-save-exit">Guardar y salir</button>
+        <button class="btn-exit-nosave" id="modal-exit-nosave">Salir sin guardar</button>
+        <button class="btn-exit-cancel" id="modal-exit-cancel">No salir</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /************************************
+     * Utilidades
+     ************************************/
+    function normalizeSpanish(str) {
+      return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function normalizeGeneric(str) {
+      return str.toLowerCase().trim();
+    }
+
+    function splitSynonyms(raw) {
+      if (!raw) return [];
+      return raw
+        .split(/[,;/]/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+    }
+
+    function todayKey() {
+      // YYYY-MM-DD para agrupar progreso diario
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,"0");
+      const day = String(d.getDate()).padStart(2,"0");
+      return `${y}-${m}-${day}`;
+    }
+
+    /************************************
+     * Estado / almacenamiento
+     ************************************/
+    const EXCEL_FILE = "Lista vocabulario.xlsx";
+    const STORAGE_KEY = "pabloVocabProgress_v1";
+    const DIFF_KEY = "pabloVocabDifficult_v1";
+    const FAIL_KEY = "pabloVocabFails_v1";    // contador de fallos por palabra
+    const SCORE_KEY = "pabloVocabScores_v1";  // histórico de % acierto por día
+
+    let fullWordList = []; // {en,enSyn[],es,esSyn[],tema,nombreTema,topicFull}
+
+    let session = {
+      direction: "es-en",
+      order: "sequential",
+      topicFull: null, // string o "Todos"
+      difficultOnly: "no",
+      modeType: "reiniciar",
+      examMode: false,
+
+      cards: [],
+      currentIndex: 0,
+
+      attempts: 0,
+      corrects: 0,
+
+      gotRight: new Set(),
+      gotWrong: new Set(),
+
+      difficultWords: {},
+
+      examAnswers: [],
+
+      practicingFailsMode: false, // true si venimos del ranking de fallos
+    };
+
+    // fallCounter: { "en|es": numeroFallosAcumulados }
+    function loadFails() {
+      try {
+        const raw = localStorage.getItem(FAIL_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch(e) {
+        return {};
+      }
+    }
+    let failCounter = loadFails();
+
+    // scoreHistory: { "YYYY-MM-DD": porcentajeAcierto (0-100) }
+    function loadScores() {
+      try {
+        const raw = localStorage.getItem(SCORE_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch(e) {
+        return {};
+      }
+    }
+    let scoreHistory = loadScores();
+
+
+    /************************************
+     * localStorage de sesión
+     ************************************/
+    function loadStoredState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch(e) { return null; }
+    }
+
+    function saveStoredState() {
+      const data = { session };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function loadDifficultWords() {
+      const raw = localStorage.getItem(DIFF_KEY);
+      if (!raw) return {};
+      try { return JSON.parse(raw); } catch(e) { return {}; }
+    }
+
+    function saveDifficultWords() {
+      localStorage.setItem(DIFF_KEY, JSON.stringify(session.difficultWords));
+    }
+
+    function resetSessionDefaults() {
+      session = {
+        direction: "es-en",
+        order: "sequential",
+        topicFull: null,
+        difficultOnly: "no",
+        modeType: "reiniciar",
+        examMode: false,
+
+        cards: [],
+        currentIndex: 0,
+
+        attempts: 0,
+        corrects: 0,
+
+        gotRight: new Set(),
+        gotWrong: new Set(),
+
+        difficultWords: loadDifficultWords(),
+
+        examAnswers: [],
+
+        practicingFailsMode: false,
+      };
+    }
+
+    /************************************
+     * Marcar / desmarcar palabra difícil
+     ************************************/
+    function markCurrentAsDifficult() {
+      const card = getCurrentCard();
+      if (!card) return;
+      // Guardamos por su topicFull real
+      const topicKey = card.topicFull || "Todos";
+      const sig = card.en + "|" + card.es;
+      if (!session.difficultWords[topicKey]) {
+        session.difficultWords[topicKey] = {};
+      }
+      session.difficultWords[topicKey][sig] = true;
+      saveDifficultWords();
+      alert("Marcada como difícil.");
+      maybeShowRemoveDiffButton(); // refrescar estado del botón quitar
+    }
+
+    function unmarkCurrentAsDifficult() {
+      const card = getCurrentCard();
+      if (!card) return;
+      const topicKey = card.topicFull || "Todos";
+      const sig = card.en + "|" + card.es;
+      if (session.difficultWords[topicKey] && session.difficultWords[topicKey][sig]) {
+        delete session.difficultWords[topicKey][sig];
+        // si ese objeto queda vacío, lo dejamos vacío igualmente, no pasa nada
+        saveDifficultWords();
+        alert("Quitada de difíciles.");
+        maybeShowRemoveDiffButton();
+      }
+    }
+
+    function isCurrentCardDifficult() {
+      const card = getCurrentCard();
+      if (!card) return false;
+      const topicKey = card.topicFull || "Todos";
+      const sig = card.en + "|" + card.es;
+      return !!(
+        session.difficultWords[topicKey] &&
+        session.difficultWords[topicKey][sig]
+      );
+    }
+
+    function maybeShowRemoveDiffButton() {
+      const btn = document.getElementById("btn-remove-diff");
+      const onlyDiff = (session.difficultOnly === "yes");
+      const cardIsDiff = isCurrentCardDifficult();
+      // Solo mostramos este botón si:
+      // - estamos repasando SOLO difíciles
+      // - y la carta actual está marcada como difícil
+      if (onlyDiff && cardIsDiff) {
+        btn.style.display = "inline-block";
+      } else {
+        btn.style.display = "none";
+      }
+    }
+
+    /************************************
+     * Registrar fallos
+     ************************************/
+    function addFailForCard(card) {
+      const sig = card.en + "|" + card.es;
+      if (!failCounter[sig]) failCounter[sig] = 0;
+      failCounter[sig]++;
+      localStorage.setItem(FAIL_KEY, JSON.stringify(failCounter));
+    }
+
+    /************************************
+     * Guardar % acierto por día
+     ************************************/
+    function saveScoreForToday(porcentaje) {
+      scoreHistory[todayKey()] = porcentaje;
+      localStorage.setItem(SCORE_KEY, JSON.stringify(scoreHistory));
+    }
+
+    function getLastTwoScores() {
+      // Devuelve [penúltimo%, último%] si existen
+      const keys = Object.keys(scoreHistory).sort(); // orden cronológico
+      if (keys.length === 0) return [null, null];
+      if (keys.length === 1) {
+        const last = scoreHistory[keys[keys.length-1]];
+        return [null, last];
+      }
+      const last = scoreHistory[keys[keys.length-1]];
+      const prev = scoreHistory[keys[keys.length-2]];
+      return [prev, last];
+    }
+
+    function updateHomeProgressBox() {
+      const box = document.getElementById("home-progress-box");
+      const spanPct = document.getElementById("home-last-pct");
+      const [prev, last] = getLastTwoScores();
+      if (last == null) {
+        box.style.display = "none";
+        return;
+      }
+      box.style.display = "block";
+      spanPct.textContent = last.toString();
+    }
+
+    /************************************
+     * Leer Excel
+     ************************************/
+    async function fetchExcelData() {
+      const resp = await fetch(EXCEL_FILE + "?v=3");
+      const ab = await resp.arrayBuffer();
+      const wb = XLSX.read(ab, { type: "array" });
+      const firstSheetName = wb.SheetNames[0];
+      const ws = wb.Sheets[firstSheetName];
+      const rows = XLSX.utils.sheet_to_json(ws, {defval:""});
+
+      fullWordList = rows.map(r => {
+        const en = (r["Inglés"] || "").toString().trim();
+        const enSyn = splitSynonyms(r["Sinónimo inglés"] || "");
+        const es = (r["Español"] || "").toString().trim();
+        const esSyn = splitSynonyms(r["Sinónimo español"] || "");
+        const tema = (r["Tema"] || "").toString().trim();
+        const nombreTema = (r["Nombre de tema"] || "").toString().trim();
+        return {
+          en,
+          enSyn,
+          es,
+          esSyn,
+          tema,
+          nombreTema,
+          topicFull: (tema + " - " + nombreTema).trim()
+        };
+      }).filter(w => w.en || w.es);
+    }
+
+    /************************************
+     * Temas (incluye "Todos")
+     ************************************/
+    function uniqueTopicsFromData() {
+      const set = new Set();
+      fullWordList.forEach(w => {
+        if (w.topicFull) set.add(w.topicFull);
+      });
+      const arr = Array.from(set).sort();
+      return ["Todos", ...arr];
+    }
+
+    function refreshTopicSelect() {
+      const sel = document.getElementById("cfg-topic");
+      sel.innerHTML = "";
+      uniqueTopicsFromData().forEach(topic => {
+        const opt = document.createElement("option");
+        opt.value = topic;
+        opt.textContent = topic;
+        sel.appendChild(opt);
+      });
+    }
+
+    function updateNoDifficultMessage() {
+      const topic = document.getElementById("cfg-topic").value;
+      const diffOnly = document.getElementById("cfg-difficultOnly").value;
+      const box = document.getElementById("cfg-no-difficult-msg");
+
+      if (diffOnly === "yes") {
+        let hasAny = false;
+        if (topic === "Todos") {
+          // mirar en todos los temas guardados
+          for (const t in session.difficultWords) {
+            if (session.difficultWords[t] &&
+                Object.keys(session.difficultWords[t]).length > 0) {
+              hasAny = true;
+              break;
+            }
+          }
+        } else {
+          hasAny = session.difficultWords[topic] &&
+                   Object.keys(session.difficultWords[topic]).length > 0;
+        }
+        box.style.display = hasAny ? "none" : "block";
+      } else {
+        box.style.display = "none";
+      }
+    }
+
+    /************************************
+     * Construir cartas desde la config
+     ************************************/
+    function buildCardsFromConfig(customPool=null) {
+      const direction = document.getElementById("cfg-direction").value;
+      const order = document.getElementById("cfg-order").value;
+      const topicFull = document.getElementById("cfg-topic").value;
+      const difficultOnly = document.getElementById("cfg-difficultOnly").value;
+      const modeType = document.getElementById("cfg-modeType").value;
+      const examMode = document.getElementById("cfg-examMode").checked;
+
+      session.direction = direction;
+      session.order = order;
+      session.topicFull = topicFull;
+      session.difficultOnly = difficultOnly;
+      session.modeType = modeType;
+      session.examMode = examMode;
+      session.attempts = 0;
+      session.corrects = 0;
+      session.currentIndex = 0;
+      session.gotRight = new Set();
+      session.gotWrong = new Set();
+      session.examAnswers = [];
+      session.practicingFailsMode = (customPool !== null);
+
+      // Seleccionamos el "pool" de cartas:
+      let pool;
+      if (customPool) {
+        // modo especial "Practicar solo estas"
+        pool = customPool.slice();
+      } else {
+        if (topicFull === "Todos") {
+          pool = fullWordList.slice();
+        } else {
+          pool = fullWordList.filter(w => w.topicFull === topicFull);
+        }
+
+        if (difficultOnly === "yes") {
+          let diffSet = {};
+          if (session.difficultWords) {
+            if (topicFull === "Todos") {
+              for (const t in session.difficultWords) {
+                Object.assign(diffSet, session.difficultWords[t] || {});
+              }
+            } else {
+              diffSet = session.difficultWords[topicFull] || {};
+            }
+          }
+          pool = pool.filter(w => diffSet[w.en + "|" + w.es]);
+        }
+      }
+
+      // Orden
+      if (order === "random") {
+        pool = pool
+          .map(v => ({v, sort: Math.random()}))
+          .sort((a,b)=>a.sort-b.sort)
+          .map(o=>o.v);
+      }
+
+      session.cards = pool;
+    }
+
+    /************************************
+     * Pantalla quiz: render tarjeta actual
+     ************************************/
+    function getCurrentCard() {
+      return session.cards[session.currentIndex];
+    }
+
+    function updateProgressBar() {
+      const bar = document.getElementById("progress-bar");
+      const total = session.cards.length || 1;
+      const done = session.currentIndex + 1;
+      const pct = Math.round(done/total*100);
+      bar.style.width = pct + "%";
+    }
+
+    function updateStatsLine() {
+      const st = document.getElementById("quiz-stats");
+      const total = session.cards.length;
+      const pos = session.currentIndex + 1;
+      const topic = session.topicFull || (session.practicingFailsMode ? "Top fallos" : "...");
+      st.textContent =
+        "Aciertos: " + session.corrects +
+        " · Intentos: " + session.attempts +
+        " · Tema: " + topic +
+        " · " + pos + "/" + total;
+    }
+
+    function showCurrentCard() {
+      const card = getCurrentCard();
+      if (!card) {
+        finishBlock();
+        return;
+      }
+
+      const wordToShow = (session.direction === "es-en") ? card.es : card.en;
+      document.getElementById("quiz-word").textContent = wordToShow || "...";
+      document.getElementById("answer-input").value = "";
+
+      // chips de tema
+      const chipsBox = document.getElementById("quiz-chips");
+      chipsBox.innerHTML = "";
+      // enseñamos siempre el tema real de la tarjeta
+      if (card.topicFull) {
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        chip.textContent = card.topicFull;
+        chipsBox.appendChild(chip);
+      }
+
+      // ocultar feedback y extra info
+      const fb = document.getElementById("feedback-card");
+      fb.style.display = "none";
+      fb.className = "feedback-card";
+      fb.textContent = "";
+
+      const extra = document.getElementById("extra-info-card");
+      extra.style.display = "none";
+      document.getElementById("extra-en").textContent = "";
+      document.getElementById("extra-es").textContent = "";
+
+      // botones
+      document.getElementById("btn-next").style.display = "none";
+      document.getElementById("btn-check").style.display = "block";
+
+      // exam mode oculta herramientas
+      const hideTools = session.examMode;
+      document.getElementById("btn-show").style.display = hideTools ? "none" : "block";
+      document.getElementById("btn-skip").style.display = hideTools ? "none" : "block";
+      document.getElementById("btn-hard").style.display = hideTools ? "none" : "block";
+
+      // botón "Ya no es difícil"
+      maybeShowRemoveDiffButton();
+
+      updateProgressBar();
+      updateStatsLine();
+      saveStoredState();
+    }
+
+    /************************************
+     * Corrección de respuesta
+     ************************************/
+    function isAnswerCorrect(userAns, card) {
+      let mainSolution, syns, normalizeFn;
+
+      if (session.direction === "es-en") {
+        mainSolution = card.en;
+        syns = card.enSyn || [];
+        normalizeFn = normalizeGeneric;
+      } else {
+        mainSolution = card.es;
+        syns = card.esSyn || [];
+        normalizeFn = normalizeSpanish;
+      }
+
+      const targetList = [mainSolution, ...syns].map(s => s.toString());
+      const normUser = normalizeFn(userAns);
+
+      for (const cand of targetList) {
+        const normCand = normalizeFn(cand);
+        if (normUser === normCand) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function buildFeedbackText(correct, userAns, card) {
+      const fb = document.getElementById("feedback-card");
+      const extra = document.getElementById("extra-info-card");
+
+      if (session.examMode) {
+        fb.style.display = "none";
+        extra.style.display = "none";
+        return;
+      }
+
+      const isEsToEn = (session.direction === "es-en");
+      const mainSolution = isEsToEn ? card.en : card.es;
+      const synEN = card.enSyn.join(", ");
+      const synES = card.esSyn.join(", ");
+
+      fb.style.display = "block";
+      if (correct) {
+        fb.className = "feedback-card feedback-ok";
+        fb.innerHTML = "Acierto. ¡Muy bien!<br>Solución principal: <strong>" +
+          mainSolution + "</strong>";
+      } else {
+        fb.className = "feedback-card feedback-bad";
+        fb.innerHTML = "Fallo. ¡Revisa tu respuesta!<br>Solución principal: <strong>" +
+          mainSolution + "</strong>";
+      }
+
+      extra.style.display = "block";
+      document.getElementById("extra-en").textContent = synEN || "(ninguno)";
+      document.getElementById("extra-es").textContent = synES || "(ninguno)";
+    }
+
+    /************************************
+     * Avance y botones de quiz
+     ************************************/
+    function recordAttempt(correct, userAns, card, reasonTag) {
+      // reasonTag es "check", "show", "skip"
+      // Guardamos stats de la carta actual en examMode
+      if (session.examMode) {
+        const isEsToEn = (session.direction === "es-en");
+        const mainSolution = isEsToEn ? card.en : card.es;
+        const shownWord = isEsToEn ? card.es : card.en;
+        session.examAnswers.push({
+          idx: session.currentIndex,
+          userAnswer: userAns,
+          isCorrect: correct,
+          correctMain: mainSolution,
+          shownWord
+        });
+      }
+
+      session.attempts++;
+      if (correct) {
+        session.corrects++;
+        session.gotRight.add(session.currentIndex);
+      } else {
+        session.gotWrong.add(session.currentIndex);
+        // sumamos fallo global
+        addFailForCard(card);
+      }
+
+      saveStoredState();
+      updateStatsLine();
+    }
+
+    function checkAnswer() {
+      const card = getCurrentCard();
+      if (!card) return;
+      const userAns = document.getElementById("answer-input").value || "";
+      const correct = isAnswerCorrect(userAns, card);
+
+      recordAttempt(correct, userAns, card, "check");
+      buildFeedbackText(correct, userAns, card);
+
+      document.getElementById("btn-check").style.display = "none";
+      document.getElementById("btn-next").style.display = "block";
+    }
+
+    function showSolutionAndSkipMarkWrong() {
+      const card = getCurrentCard();
+      if (!card) return;
+
+      if (document.getElementById("btn-check").style.display !== "none") {
+        // sólo registramos si aún no se había comprobado
+        recordAttempt(false, "(Mostrada solución)", card, "show");
+        buildFeedbackText(false, "", card);
+
+        document.getElementById("btn-check").style.display = "none";
+        document.getElementById("btn-next").style.display = "block";
+      }
+    }
+
+    function skipWithoutAnswer() {
+      const card = getCurrentCard();
+      if (!card) return;
+
+      recordAttempt(false, "(Saltada)", card, "skip");
+      buildFeedbackText(false, "", card);
+
+      document.getElementById("btn-check").style.display = "none";
+      document.getElementById("btn-next").style.display = "block";
+    }
+
+    function goNextCard() {
+      session.currentIndex++;
+      if (session.currentIndex >= session.cards.length) {
+        finishBlock();
+      } else {
+        showCurrentCard();
+      }
+    }
+
+    /************************************
+     * Fin de bloque
+     ************************************/
+    function finishBlock() {
+      // guardamos % acierto del bloque actual (para progreso)
+      const pct = session.attempts > 0
+        ? Math.round((session.corrects / session.attempts)*100)
+        : 0;
+      saveScoreForToday(pct);
+
+      if (!session.practicingFailsMode && session.modeType === "reiniciar") {
+        const wrongIdxs = Array.from(session.gotWrong);
+        if (
+          wrongIdxs.length > 0 &&
+          wrongIdxs.length !== session.cards.length
+        ) {
+          const newCards = wrongIdxs.map(i => session.cards[i]);
+          session.cards = newCards;
+          session.currentIndex = 0;
+          session.gotRight = new Set();
+          session.gotWrong = new Set();
+          // attempts/corrects se mantienen
+          showCurrentCard();
+          saveStoredState();
+          return;
+        }
+      }
+
+      renderSummaryScreen();
+      saveStoredState();
+    }
+
+    function renderSummaryScreen() {
+      showScreen("screen-summary");
+
+      let finalData = [];
+      if (session.examMode) {
+        finalData = session.examAnswers.map(info => {
+          return {
+            shownWord: info.shownWord,
+            correctMain: info.correctMain,
+            isCorrect: info.isCorrect,
+            userAnswer: info.userAnswer
+          };
+        });
+      } else {
+        session.cards.forEach((card, idx) => {
+          finalData.push({
+            shownWord: (session.direction==="es-en")?card.es:card.en,
+            correctMain:(session.direction==="es-en")?card.en:card.es,
+            isCorrect: session.gotRight.has(idx),
+            userAnswer:""
+          });
+        });
+      }
+
+      const correctList = finalData.filter(x => x.isCorrect);
+      const wrongList   = finalData.filter(x => !x.isCorrect);
+
+      // titular
+      const headline = document.getElementById("summary-headline");
+      headline.textContent = session.practicingFailsMode
+        ? "Has practicado tus palabras más difíciles"
+        : "Bloque terminado";
+
+      // stats
+      const pctNow = session.attempts > 0
+        ? Math.round((session.corrects / session.attempts)*100)
+        : 0;
+      const summaryStats = document.getElementById("summary-stats");
+      summaryStats.textContent =
+        "Aciertos: " + session.corrects +
+        " · Intentos: " + session.attempts +
+        " · Porcentaje: " + pctNow + "%";
+
+      // progreso histórico
+      const [prevScore, lastScore] = getLastTwoScores();
+      const box = document.getElementById("summary-progress-box");
+      const prevSpan = document.getElementById("summary-prev-pct");
+      const nowSpan = document.getElementById("summary-current-pct");
+      if (lastScore == null) {
+        box.style.display = "none";
+      } else {
+        box.style.display = "block";
+        nowSpan.textContent = lastScore != null ? lastScore : "--";
+        prevSpan.textContent = prevScore != null ? prevScore : "--";
+      }
+
+      // listas aciertos/fallos
+      const correctBox = document.getElementById("summary-correct");
+      const wrongBox   = document.getElementById("summary-wrong");
+      correctBox.innerHTML = "";
+      wrongBox.innerHTML = "";
+
+      correctList.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "summary-item";
+        div.textContent =
+          item.shownWord + " → " + item.correctMain + " ✓";
+        correctBox.appendChild(div);
+      });
+      wrongList.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "summary-item";
+        div.textContent =
+          item.shownWord + " → " + item.correctMain + " ✗";
+        wrongBox.appendChild(div);
+      });
+    }
+
+    /************************************
+     * Ranking de fallos
+     ************************************/
+    function getTopFails(limit=10) {
+      // failCounter = { "en|es": count }
+      // queremos top N por count desc
+      const pairs = Object.entries(failCounter);
+      pairs.sort((a,b)=>b[1]-a[1]); // más fallada primero
+      const top = pairs.slice(0, limit);
+
+      // convertimos de "en|es" => objeto carta "demo"
+      return top.map(([sig, count]) => {
+        const [en, es] = sig.split("|");
+        // intentar encontrar datos extra (synónimos, tema) en fullWordList
+        const ref = fullWordList.find(w => w.en === en && w.es === es);
+        return {
+          en,
+          es,
+          count,
+          topicFull: ref ? ref.topicFull : "",
+          enSyn: ref ? ref.enSyn : [],
+          esSyn: ref ? ref.esSyn : []
+        };
+      });
+    }
+
+    function showFailsScreen() {
+      const listDiv = document.getElementById("fails-list");
+      listDiv.innerHTML = "";
+      const top = getTopFails(10);
+
+      if (top.length === 0) {
+        const p = document.createElement("div");
+        p.textContent = "Aún no hay datos de fallos.";
+        p.className = "muted";
+        listDiv.appendChild(p);
+      } else {
+        top.forEach((item, idx) => {
+          const box = document.createElement("div");
+          box.className = "fail-item";
+
+          const main = document.createElement("div");
+          main.className = "fail-main";
+          main.textContent =
+            (idx+1) + ". " + item.en + " → " + item.es;
+
+          const sub = document.createElement("div");
+          sub.className = "fail-count";
+          sub.textContent = item.count + " fallos • " + (item.topicFull || "");
+
+          box.appendChild(main);
+          box.appendChild(sub);
+
+          listDiv.appendChild(box);
+        });
+      }
+
+      showScreen("screen-fails");
+    }
+
+    function practiceTopFailsNow() {
+      const top = getTopFails(10);
+      if (top.length === 0) {
+        alert("No hay palabras suficientes con fallos.");
+        return;
+      }
+
+      // montamos un pool de cartas compatible con el resto del flujo
+      const pool = top.map(item => {
+        // Buscar la carta completa original en fullWordList
+        const ref = fullWordList.find(w => w.en === item.en && w.es === item.es);
+        if (ref) return ref;
+        // fallback minimal si no encontramos
+        return {
+          en: item.en,
+          enSyn: item.enSyn || [],
+          es: item.es,
+          esSyn: item.esSyn || [],
+          topicFull: item.topicFull || ""
+        };
+      });
+
+      buildCardsFromConfig(pool);
+      if (session.cards.length === 0) {
+        alert("No hay palabras para practicar.");
+        return;
+      }
+      showScreen("screen-quiz");
+      showCurrentCard();
+    }
+
+    /************************************
+     * Cambio de pantallas
+     ************************************/
+    function showScreen(id) {
+      document.querySelectorAll(".screen").forEach(sec=>{
+        sec.style.display = "none";
+      });
+      document.getElementById(id).style.display = "block";
+    }
+
+    /************************************
+     * Modal salir
+     ************************************/
+    const modal = document.getElementById("exit-modal");
+    const btnExitQuiz = document.getElementById("btn-exit-quiz");
+    const btnModalSaveExit = document.getElementById("modal-save-exit");
+    const btnModalExitNoSave = document.getElementById("modal-exit-nosave");
+    const btnModalCancel = document.getElementById("modal-exit-cancel");
+
+    function openExitModal() {
+      modal.style.display = "flex";
+    }
+    function closeExitModal() {
+      modal.style.display = "none";
+    }
+
+    btnExitQuiz.addEventListener("click", openExitModal);
+
+    // Guardar y salir
+    btnModalSaveExit.addEventListener("click", () => {
+      saveStoredState(); // guardamos la sesión tal cual
+      closeExitModal();
+      showScreen("screen-config");
+      updateHomeProgressBox();
+    });
+
+    // Salir sin guardar
+    btnModalExitNoSave.addEventListener("click", () => {
+      closeExitModal();
+      resetSessionDefaults(); // limpia ronda actual
+      saveStoredState();      // guardamos ese reset
+      showScreen("screen-config");
+      updateHomeProgressBox();
+    });
+
+    // No salir
+    btnModalCancel.addEventListener("click", () => {
+      closeExitModal();
+    });
+
+    /************************************
+     * EVENTOS UI
+     ************************************/
+    document.getElementById("cfg-topic").addEventListener("change", updateNoDifficultMessage);
+    document.getElementById("cfg-difficultOnly").addEventListener("change", updateNoDifficultMessage);
+
+    document.getElementById("btn-start").addEventListener("click", () => {
+      buildCardsFromConfig();
+
+      if (session.cards.length === 0) {
+        alert("No hay palabras para este filtro.");
+        return;
+      }
+
+      showScreen("screen-quiz");
+      showCurrentCard();
+    });
+
+    document.getElementById("btn-resume").addEventListener("click", () => {
+      const stored = loadStoredState();
+      if (!stored || !stored.session) return;
+      session = stored.session;
+
+      // recargar difíciles actuales para no perder cambios
+      session.difficultWords = loadDifficultWords();
+
+      if (session.currentIndex >= (session.cards?.length||0)) {
+        // si estaba justo al final
+        renderSummaryScreen();
+      } else {
+        showScreen("screen-quiz");
+        showCurrentCard();
+      }
+    });
+
+    document.getElementById("btn-show-fails").addEventListener("click", () => {
+      showFailsScreen();
+    });
+
+    document.getElementById("btn-practice-fails").addEventListener("click", () => {
+      practiceTopFailsNow();
+    });
+
+    document.getElementById("btn-back-home").addEventListener("click", () => {
+      showScreen("screen-config");
+      updateHomeProgressBox();
+    });
+
+    // Quiz screen
+    document.getElementById("btn-check").addEventListener("click", checkAnswer);
+    document.getElementById("btn-show").addEventListener("click", showSolutionAndSkipMarkWrong);
+    document.getElementById("btn-skip").addEventListener("click", skipWithoutAnswer);
+    document.getElementById("btn-hard").addEventListener("click", markCurrentAsDifficult);
+    document.getElementById("btn-next").addEventListener("click", goNextCard);
+
+    // Botón "Ya no es difícil"
+    document.getElementById("btn-remove-diff").addEventListener("click", () => {
+      unmarkCurrentAsDifficult();
+    });
+
+    // Summary screen
+    document.getElementById("btn-restart").addEventListener("click", () => {
+      buildCardsFromConfig(); // mantiene la misma config
+      if (session.cards.length === 0) {
+        alert("No hay palabras para este filtro.");
+        return;
+      }
+      showScreen("screen-quiz");
+      showCurrentCard();
+    });
+
+    document.getElementById("btn-go-config").addEventListener("click", () => {
+      showScreen("screen-config");
+      updateHomeProgressBox();
+    });
+
+    /************************************
+     * SERVICE WORKER (PWA OFFLINE)
+     ************************************/
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+      const CACHE_NAME = 'pablo-vocab-cache-v3';
+      const FILES_TO_CACHE = [
+        './',
+        './index.html?v=3',
+        './manifest.webmanifest?v=3',
+        './icon-192.png?v=3',
+        './icon-512.png?v=3',
+        './${EXCEL_FILE}?v=3'
+      ];
+
+      self.addEventListener('install', (evt) => {
+        evt.waitUntil(
+          caches.open(CACHE_NAME).then((cache) => {
+            return cache.addAll(FILES_TO_CACHE);
+          })
+        );
+        self.skipWaiting();
+      });
+
+      self.addEventListener('activate', (evt) => {
+        evt.waitUntil(
+          caches.keys().then((keyList) => {
+            return Promise.all(keyList.map((key) => {
+              if (key !== CACHE_NAME) {
+                return caches.delete(key);
+              }
+            }));
+          })
+        );
+        self.clients.claim();
+      });
+
+      self.addEventListener('fetch', (evt) => {
+        evt.respondWith(
+          caches.match(evt.request).then((resp) => {
+            return resp || fetch(evt.request);
+          })
+        );
+      });
+      `;
+      const blob = new Blob([swCode], {type: 'application/javascript'});
+      const swUrl = URL.createObjectURL(blob);
+      navigator.serviceWorker.register(swUrl);
+    }
+
+    /************************************
+     * INICIALIZACIÓN
+     ************************************/
+    (async function init() {
+      // cargamos difíciles guardadas
+      session.difficultWords = loadDifficultWords();
+
+      // cargamos Excel
+      await fetchExcelData();
+
+      // rellena selector temas
+      refreshTopicSelect();
+
+      // botón "Continuar donde lo dejé" visible solo si hay sesión previa válida
+      const stored = loadStoredState();
+      const btnResume = document.getElementById("btn-resume");
+      if (stored && stored.session && stored.session.cards && stored.session.cards.length>0) {
+        btnResume.style.display = "block";
+      } else {
+        btnResume.style.display = "none";
+      }
+
+      updateNoDifficultMessage();
+      updateHomeProgressBox();
+      showScreen("screen-config");
+    })();
+  </script>
+</body>
+</html>
